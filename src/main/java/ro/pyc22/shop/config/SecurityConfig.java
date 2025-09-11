@@ -7,6 +7,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -36,7 +37,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
                 http .csrf(AbstractHttpConfigurer::disable);
-                http.cors(AbstractHttpConfigurer::disable);
+                 http.cors(Customizer.withDefaults());
                 http.authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_URLS).permitAll());
                 http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.DELETE,"/user/delete/**").hasAuthority("DELETE:USER"));
                 http.authorizeHttpRequests(ar -> ar.anyRequest().authenticated());
@@ -53,10 +54,8 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(){
-        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider daoAuthenticationProvider = new DaoAuthenticationProvider(userDetailsService);
         daoAuthenticationProvider.setPasswordEncoder(passwordEncoder);
-
         return new ProviderManager(daoAuthenticationProvider);
     }
 

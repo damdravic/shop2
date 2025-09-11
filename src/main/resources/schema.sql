@@ -32,3 +32,23 @@ role_id BIGINT UNSIGNED NOT NULL,
 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
 FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+
+
+CREATE TABLE IF NOT EXISTS products(
+id                BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT PRIMARY KEY,
+name              VARCHAR(100)     NOT NULL,
+product_code       VARCHAR(100)    NOT NULL,
+intern_prod_code   VARCHAR(100)    DEFAULT NULL,
+qr_code_data        VARCHAR(100)  DEFAULT NULL,
+description         VARCHAR(255)  DEFAULT NULL,
+main_image           VARCHAR(255)  DEFAULT NULL,
+price                DECIMAL(7,2)  NOT NULL,
+cost_price            DECIMAL(7,2) DEFAULT NULL,
+markup_percentage     DECIMAL(3,2)  DEFAULT NULL,
+stock            INT NOT NULL,
+is_available BOOLEAN DEFAULT TRUE,
+warranty_months INT DEFAULT NULL,
+vat_percentage INT DEFAULT NULL,
+CONSTRAINT UQ_Products_Product_Code UNIQUE(product_code)
+);

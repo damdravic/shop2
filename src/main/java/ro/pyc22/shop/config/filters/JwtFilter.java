@@ -2,6 +2,7 @@ package ro.pyc22.shop.config.filters;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class JwtFilter extends OncePerRequestFilter {
     protected  static final String TOKEN_KEY = "token";
     protected static  final String EMAIL_KEY = "email";
     private final JwtTokenService jwtTokenService;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
@@ -52,22 +54,32 @@ public class JwtFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request,response);
         }catch(Exception exception){
-
-         throw  new ApiException("Something in filter");
+            System.out.println(exception.getMessage());
+          exception.getStackTrace();
         }
 
     }
 
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        return request.getHeader(AUTHORIZATION) == null || !request.getHeader(AUTHORIZATION).startsWith(TOKEN_PREFIX)
-                || request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) || asList(PUBLIC_ROUTES).contains(request.getRequestURI());
+        return  request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) || asList(PUBLIC_ROUTES).contains(request.getRequestURI());
 
 
     }
     private String getToken(HttpServletRequest request) {
-        return ofNullable(request.getHeader(AUTHORIZATION)).filter(header -> header.startsWith(TOKEN_PREFIX))
-                .map(token -> token.replace(TOKEN_PREFIX,EMPTY)).get();
+      String token = request.getHeader(AUTHORIZATION);
+      if(token != null && token.startsWith("Bearer ")){
+          return token.substring(7);
+      }
+      if(request.getCookies() != null){
+          for(Cookie c : request.getCookies()){
+              if("accessToken".equals(c.getName())){
+                  return c.getValue();
+              }
+          }
+      }
+      return null;
     }
+
 
     private Map<String, String> getRequestValues(HttpServletRequest request) {
         return Map.of(EMAIL_KEY,jwtTokenService.getSubject(getToken(request),request),TOKEN_KEY,getToken(request));

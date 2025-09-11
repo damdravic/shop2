@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import ro.pyc22.shop.exceptions.ApiException;
@@ -59,7 +60,7 @@ public class UserRepositoryImpl implements UserRepository<User> {
        try{
              return jdbc.queryForObject(SELECT_USER_BY_EMAIL, Map.of("email",email), new UserRowMapper());
        }catch(EmptyResultDataAccessException ex){
-           throw new ApiException("empty result");
+           throw new UsernameNotFoundException("This user not exist in owr database ! Please try again ...");
 
        }catch (DataAccessException dae){
            //TODO to implement ExceptionHandler

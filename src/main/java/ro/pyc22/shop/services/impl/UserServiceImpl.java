@@ -13,6 +13,7 @@ import ro.pyc22.shop.services.UserService;
 public class UserServiceImpl implements UserService<User> {
 
     private final UserRepository<User> userRepository;
+
     @Override
     public User create(User user) {
 

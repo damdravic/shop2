@@ -25,6 +25,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
                  .timeStamp(now().toString())
                  .reason("You need to log in to access this resource")
                  .httpStatus(UNAUTHORIZED)
+                 .message("here my massage" + authException.getMessage())
                  .statusCode(UNAUTHORIZED.value())
                  .build();
          response.setContentType(APPLICATION_JSON_VALUE);

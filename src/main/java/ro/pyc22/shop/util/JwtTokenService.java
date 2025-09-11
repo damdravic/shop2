@@ -16,6 +16,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import ro.pyc22.shop.exceptions.ApiException;
+import ro.pyc22.shop.model.User;
 import ro.pyc22.shop.model.UserPrincipal;
 
 import java.util.Date;
@@ -82,6 +83,8 @@ public class JwtTokenService {
     }
     }
 
+
+
 public boolean isTokenValid(String email, String token){
         JWTVerifier verifier = getVerifier();
     return StringUtils.isNotEmpty(email) && !isTokenExpired(verifier,token);
@@ -100,7 +103,7 @@ public boolean isTokenValid(String email, String token){
             Algorithm algorithm = HMAC512(secret);
             jwtVerifier = JWT.require(algorithm).withIssuer("PYC").build();
         }catch (JWTVerificationException ex){
-            throw new JWTVerificationException("Verification toned invalid");
+            throw new JWTVerificationException("Verification toked invalid");
         }
  return jwtVerifier;
 }
