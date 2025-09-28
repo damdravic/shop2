@@ -31,7 +31,9 @@ public class ShopApplication {
 				"http://localhost:3000",
 				"http://securecapita.org")); */
 
-        corsConfiguration.setAllowedOriginPatterns(List.of("http://localhost:4200"));
+        corsConfiguration.setAllowedOriginPatterns(List.of( "http://195.238.123.230",   // producție (HTTP)
+                "https://195.238.123.230",  // dacă pui HTTPS
+                "http://localhost:4200"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("Origin", "Access-Control-Allow-Origin", "Content-Type",
                 "Accept", "Jwt-Token", "Authorization", "Origin", "Accept", "X-Requested-With",
                 "Access-Control-Request-Method", "Access-Control-Request-Headers"));

@@ -38,7 +38,7 @@ public class AuthResources {
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody Credentials credentials){
 
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(credentials.getEmail(),credentials.getPassword()));
+        //authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(credentials.getEmail(),credentials.getPassword()));
 
         UserDTO user =  userService.getUserByEmail(credentials.getEmail());
          return  user.isUsingMfa() ? sendPassword(user) :  sendResponse(user);
@@ -46,23 +46,6 @@ public class AuthResources {
 
 
     }
-
- /*   private ResponseEntity<HttpResponse> sendResponse(UserDTO userDTO) {
-        log.info("sendResponse");
-         return ResponseEntity.ok().body(
-                 HttpResponse.builder()
-                         .httpStatus(HttpStatus.OK)
-                         .statusCode(HttpStatus.OK.hashCode())
-                         .message("Authentication success !!!")
-                         .data(Map.of("user",userDTO,
-                                 "accessToken",tokenService.generateAccessToken(getPrincipal(userDTO))))
-                         .build()
-         );
-
-    }
-
-  */
-
 
 
     private ResponseEntity<HttpResponse> sendResponse(UserDTO userDTO){
@@ -74,19 +57,12 @@ public class AuthResources {
                 .secure(false)
                 .path("/")
                 .sameSite("Lax")
-                .maxAge(Duration.ofMinutes(15))
+                .maxAge(Duration.ofMinutes(150))
                 .build();
-        ResponseCookie authMarker = ResponseCookie.from("auth", "1")
-                .httpOnly(false)
-                .secure(false)              // true pe HTTPS
-                .path("/")
-                .sameSite("Lax")            // IMPORTANT pt localhost
-                .maxAge(Duration.ofMinutes(15))
-                .build();
+
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE,accessCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, authMarker.toString())
                 .body(
                         HttpResponse.builder()
                                 .httpStatus(HttpStatus.OK)
@@ -96,35 +72,44 @@ public class AuthResources {
                                 .build()
                 );
     }
-/*
+
     @GetMapping("/auth/me")
-    public ResponseEntity<HttpResponse> me(@CookieValue(value="accessToken", required=false) String at) {
-        if (at == null || !tokenService.isTokenValid(tokenService.getSubject(at,),at)) return tokenInvalidResponse();
-        var user = userService.getCurrentUser(at); // din token/db
-        return ResponseEntity.ok(Map.of(
-                "id", user.getId(),
-                "email", user.getEmail(),
-                "roles", user.getRoles(),
-                "permissions", user.getPermissions()
-        ));
-    }
-    */
-    @GetMapping("/auth/me")
-    public ResponseEntity<HttpResponse> me(@AuthenticationPrincipal UserPrincipal userPrincipal){
-        User user = userPrincipal.getUser();
+    public ResponseEntity<HttpResponse> me(@AuthenticationPrincipal String email){
+        log.info("auth - in auth/me");
+        UserDTO user = userService.getUserByEmail(email);
+        log.info("auth - in auth/me + user => {}" , user);
+        log.info("auth - in auth/me + AuthenticatedUser => {}" , userService.getAuthenticatedUserByUserId(user.getEmail()));
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .httpStatus(HttpStatus.OK)
                         .statusCode(HttpStatus.OK.hashCode())
                         .message("Authentication success !!!")
-                        .data(Map.of("name",user.getFirstName(),
-                                "email",user.getEmail(),
-                                "role",roleRepository.getRoleByUserId(user.getId())))
+                        .data(Map.of("authenticatedUser",userService.getAuthenticatedUserByUserId(user.getEmail())))
                         .build()
         );
     }
 
-   
+    @GetMapping("/logout")
+    public ResponseEntity<HttpResponse> logout(){
+
+        ResponseCookie accessCookie = ResponseCookie.from("accessToken","")
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .sameSite("Lax")
+                .maxAge(Duration.ofMinutes(0))
+                .build();
+
+
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE,accessCookie.toString())
+                .body(
+                 HttpResponse.builder()
+                        .httpStatus(HttpStatus.OK)
+                        .message("Logout success !!!")
+                         .build());
+    }
 
 
     private UserPrincipal getPrincipal(UserDTO userDTO) {

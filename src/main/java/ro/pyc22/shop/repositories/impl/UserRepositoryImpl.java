@@ -12,15 +12,14 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import ro.pyc22.shop.exceptions.ApiException;
+import ro.pyc22.shop.model.AuthenticatedUser;
 import ro.pyc22.shop.model.Role;
 import ro.pyc22.shop.model.User;
 import ro.pyc22.shop.repositories.RoleRepository;
 import ro.pyc22.shop.repositories.UserRepository;
 import ro.pyc22.shop.repositories.rowMappers.UserRowMapper;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import static ro.pyc22.shop.model.enumerations.RoleEnum.ROLE_USER;
 import static ro.pyc22.shop.repositories.queries.UserQueries.INSERT_USER_QUERY;
@@ -68,6 +67,19 @@ public class UserRepositoryImpl implements UserRepository<User> {
           throw new ApiException(dae.getMessage());
        }
 
+    }
+
+    @Override
+    public AuthenticatedUser getAuthenticatesUserByUserId(String email) {
+
+        User user = getUserByEmail(email);
+        List<Role> roles = roleRepository.findAllByUserId(user.getId());
+        //fake permissions.All authenticatedUser will have this permissions TODO --  fix it
+        List<String> permissions = new ArrayList<>(List.of("PRODUCT:READ"));
+
+
+
+        return new AuthenticatedUser(user,roles,permissions);
     }
 
     private SqlParameterSource getParams(User user) {

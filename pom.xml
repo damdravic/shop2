@@ -67,11 +67,15 @@
 			<artifactId>jakarta.validation-api</artifactId>
 			<version>3.1.1</version>
 		</dependency>
-		<!--<dependency>
+
+
+<!-- comment this dependency in dev mode -->
+
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
-		</dependency> -->
+		</dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <dependency>
@@ -97,6 +101,25 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.profile.active>dev</spring.profile.active>
+            </properties>
+
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profile.active>prod</spring.profile.active>
+            </properties>
+
+        </profile>
+    </profiles>
 
 	<build>
 		<plugins>
@@ -124,6 +147,10 @@
 					</excludes>
 				</configuration>
 			</plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+            </plugin>
 		</plugins>
 	</build>
 
