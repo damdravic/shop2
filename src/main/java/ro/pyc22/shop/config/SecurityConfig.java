@@ -25,7 +25,7 @@ import ro.pyc22.shop.exceptions.CustomAuthenticationEntryPoint;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    public static final String[] PUBLIC_URLS = {"/shop/**","/admin/register","/admin/login/**","/admin/verify/code/**","/admin/refresh/token/**"};
+    public static final String[] PUBLIC_URLS = {"/shop/**","/images/**","/admin/register","/admin/login/**","/admin/verify/code/**","/admin/refresh/token/**"};
     private final JwtFilter jwtFilter;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;

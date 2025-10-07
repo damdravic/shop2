@@ -69,13 +69,13 @@
 		</dependency>
 
 
-<!-- comment this dependency in dev mode -->
+<!-- comment this dependency in dev mode
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 			<scope>provided</scope>
-		</dependency>
+		</dependency> -->
 
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
         <dependency>

@@ -33,7 +33,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
     private static final String TOKEN_PREFIX = "Bearer ";
-    private static final String[] PUBLIC_ROUTES = {"/admin/login","/admin/register","/user/verify/code","/user/refresh/token"};
+    private static final String[] PUBLIC_ROUTES = {"/images/**","/admin/login","/admin/register","/user/verify/code","/user/refresh/token"};
     private static final String HTTP_OPTIONS_METHOD = "OPTIONS";
     protected  static final String TOKEN_KEY = "token";
     protected static  final String EMAIL_KEY = "email";
@@ -48,12 +48,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
             String token = getToken(request);
             String path = request.getServletPath();
-            log.info("Path request _>  {}" , request.getRequestURI());
+
             log.info("ServletPath request _>  {}" , path);
+
             if(token == null){
                 log.info("auth error 1 - token null");
                 SecurityContextHolder.clearContext();
-                request.setAttribute("jwt_error","TOKEN_INVALID");
                 customAuthenticationEntryPoint.commence(request,response,new InsufficientAuthenticationException("TOKEN_INVALID"));
                    return;
             }
@@ -80,6 +80,8 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        System.out.println("in shouldNotFilter");
+        System.out.println("shouldNotFilter - path :  " + request.getServletPath());
         return  request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) || asList(PUBLIC_ROUTES).contains(request.getServletPath());
 
 
@@ -106,6 +108,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
     private Map<String, String> getRequestValues(HttpServletRequest request) {
+        log.info("in getRequestValues");
         return Map.of(EMAIL_KEY,jwtTokenService.getSubject(getToken(request),request),TOKEN_KEY,getToken(request));
     }
 
