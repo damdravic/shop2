@@ -11,5 +11,5 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductWithImagesDto {
     private Product product;
-    private List<String> imagesPaths;
+    private List<String> imagesPaths ;
 }

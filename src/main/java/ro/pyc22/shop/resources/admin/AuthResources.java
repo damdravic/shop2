@@ -38,12 +38,8 @@ public class AuthResources {
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody Credentials credentials){
 
-        //authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(credentials.getEmail(),credentials.getPassword()));
-
         UserDTO user =  userService.getUserByEmail(credentials.getEmail());
          return  user.isUsingMfa() ? sendPassword(user) :  sendResponse(user);
-
-
 
     }
 
@@ -75,10 +71,7 @@ public class AuthResources {
 
     @GetMapping("/auth/me")
     public ResponseEntity<HttpResponse> me(@AuthenticationPrincipal String email){
-        log.info("auth - in auth/me");
         UserDTO user = userService.getUserByEmail(email);
-        log.info("auth - in auth/me + user => {}" , user);
-        log.info("auth - in auth/me + AuthenticatedUser => {}" , userService.getAuthenticatedUserByUserId(user.getEmail()));
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .httpStatus(HttpStatus.OK)

@@ -24,16 +24,11 @@ public class ShopApplication {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
 
-		/* corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200",
-				"http://localhost:4220",
-				"http://192.168.0.175:4200",
-				"http://192.168.0.175:4220",
-				"http://localhost:3000",
-				"http://securecapita.org")); */
 
-        corsConfiguration.setAllowedOriginPatterns(List.of( "http://195.238.123.230",   // producție (HTTP)
+
+        corsConfiguration.setAllowedOriginPatterns(List.of( "http://195.238.123.230",   // production
                 "https://195.238.123.230",  // dacă pui HTTPS
-                "http://localhost:4200"));
+                "http://localhost:4200","http://localhost:4201"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("Origin", "Access-Control-Allow-Origin", "Content-Type",
                 "Accept", "Jwt-Token", "Authorization", "Origin", "Accept", "X-Requested-With",
                 "Access-Control-Request-Method", "Access-Control-Request-Headers"));

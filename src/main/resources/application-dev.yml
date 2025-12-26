@@ -33,4 +33,4 @@ jwt:
   secret: something
 
 upload:
-  folder: D:/appImages/
+  folder: C:/appImages/
