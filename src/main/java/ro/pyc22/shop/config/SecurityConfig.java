@@ -25,7 +25,19 @@ import ro.pyc22.shop.exceptions.CustomAuthenticationEntryPoint;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    public static final String[] PUBLIC_URLS = {"/shop/**","/images/**","/admin/register","/admin/login/**","/admin/verify/code/**","/admin/refresh/token/**"};
+    public static final String[] PUBLIC_URLS = {
+            "/shop/public/**",
+            "/images/**",
+
+            "/shop/customers/login",
+            "/shop/customers/register",
+            "/shop/customer/verify",
+
+            "/admin/register",
+            "/admin/login",
+            "/admin/verify/**",
+            "/admin/refresh/token"};
+
     private final JwtFilter jwtFilter;
     private final PasswordEncoder passwordEncoder;
     private final UserDetailsService userDetailsService;
@@ -37,7 +49,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
                 http .csrf(AbstractHttpConfigurer::disable);
-                 http.cors(Customizer.withDefaults());
+                http.cors(Customizer.withDefaults());
+                http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll());
                 http.authorizeHttpRequests(auth -> auth.requestMatchers(PUBLIC_URLS).permitAll());
                 http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.DELETE,"/user/delete/**").hasAuthority("DELETE:USER"));
                 http.authorizeHttpRequests(ar -> ar.anyRequest().authenticated());

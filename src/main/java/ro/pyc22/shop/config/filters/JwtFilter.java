@@ -19,6 +19,7 @@ import ro.pyc22.shop.exceptions.CustomAuthenticationEntryPoint;
 import ro.pyc22.shop.util.JwtTokenService;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -32,13 +33,46 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 @RequiredArgsConstructor
 @Slf4j
 public class JwtFilter extends OncePerRequestFilter {
+
     private static final String TOKEN_PREFIX = "Bearer ";
-    private static final String[] PUBLIC_ROUTES = {"/images/**","/admin/login","/admin/register","/user/verify/code","/user/refresh/token"};
+ //   private static final String[] PUBLIC_ROUTES = {"/images/**","/admin/login","/admin/register","/user/verify/code","/user/refresh/token", "/shop/public/**"};
     private static final String HTTP_OPTIONS_METHOD = "OPTIONS";
     protected  static final String TOKEN_KEY = "token";
     protected static  final String EMAIL_KEY = "email";
     private final JwtTokenService jwtTokenService;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
+
+
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        System.out.println("in shouldNotFilter");
+        System.out.println("shouldNotFilter - path :  " + request.getServletPath());
+        String path = request.getServletPath();
+
+        if(request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD)){
+            return true;
+        }
+
+        //for admin and users
+        if(        path.equals("/admin/login")
+                || path.equals("/admin/register")
+                || path.equals("/admin/verify/code")
+                || path.equals("/admin/verify/token")
+                || path.equals("/shop/customers/login")
+                || path.equals("/shop/customers/register")
+                || path.equals("/shop/customers/verify/token")
+                || path.equals("/shop/customers/verify/code")
+        ){
+            return true;
+        }
+
+        //
+        return  path.startsWith("/images");
+
+
+    }
+
+
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -47,15 +81,13 @@ public class JwtFilter extends OncePerRequestFilter {
         try{
 
             String token = getToken(request);
-            String path = request.getServletPath();
+            log.info("Token {}", token);
+            boolean isPublic = isIsPublic(request);
 
-            log.info("ServletPath request _>  {}" , path);
-
-            if(token == null){
-                log.info("auth error 1 - token null");
+            if(token == null || token.isBlank()){
                 SecurityContextHolder.clearContext();
-                customAuthenticationEntryPoint.commence(request,response,new InsufficientAuthenticationException("TOKEN_INVALID"));
-                   return;
+                filterChain.doFilter(request,response);
+               return;
             }
 
             Map<String ,String> values = getRequestValues(request);
@@ -65,9 +97,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 List<GrantedAuthority> authorities = jwtTokenService.getAuthorities(values.get(TOKEN_KEY));
                 Authentication authentication = jwtTokenService.generateAuthToken(values.get(EMAIL_KEY),authorities,request);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("security context set");
-                log.info("in context {}", SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString());
-
             }else{
                 SecurityContextHolder.clearContext();
             }
@@ -79,13 +108,21 @@ public class JwtFilter extends OncePerRequestFilter {
 
     }
 
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        System.out.println("in shouldNotFilter");
-        System.out.println("shouldNotFilter - path :  " + request.getServletPath());
-        return  request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD) || asList(PUBLIC_ROUTES).contains(request.getServletPath());
-
-
+    private static boolean isIsPublic(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/shop/public")
+                || path.startsWith("/images")
+                || path.equals("/shop/customers/login")
+                || path.equals("/shop/customers/register")
+                || path.equals("/shop/customers/verify/token")
+                || path.equals("/shop/customers/verify/code")
+                || path.equals("/admin/login")
+                || path.equals("/admin/register")
+                || path.equals("/admin/verify/code")
+                || path.equals("/admin/verify/token");
     }
+
+
     private String getToken(HttpServletRequest request) {
       String token = request.getHeader(AUTHORIZATION);
 
@@ -94,8 +131,10 @@ public class JwtFilter extends OncePerRequestFilter {
       }
 
       if(request.getCookies() != null){
-          log.info(request.toString());
+          log.info("Request {}",request.toString());
+
           for(Cookie c : request.getCookies()){
+              log.info("Cookie -> {} " ,c.getName());
               if("accessToken".equals(c.getName())){
                   System.out.println("accessToken exist");
                   return c.getValue();

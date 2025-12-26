@@ -63,7 +63,7 @@ public class ProductResources {
     public ResponseEntity<HttpResponse> uploadFiles(@RequestParam("files") MultipartFile[] files,
                                                        @RequestParam("category") String category,
                                                        @RequestParam("productCode") String productCode){
-        log.info("in resource");
+
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .httpStatus(OK)
@@ -78,11 +78,20 @@ public class ProductResources {
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/addProduct")
     public ResponseEntity<HttpResponse> addProduct(@RequestParam("product") String product,
-                                                      @RequestParam("imagesPaths") String[] imagesPaths){
+                                                   @RequestParam(value = "imagesPaths", required = false) String[] imagesPaths){
+
+   if(imagesPaths == null){
+       imagesPaths = new String[0];
+   }
+
+
+
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .data(Map.of("product",productService.createProduct(product,imagesPaths))).build());
     }
+
+
 
     @CrossOrigin(origins = "http://localhost:4200")
     @GetMapping("/getProductWithImages/{id}")
