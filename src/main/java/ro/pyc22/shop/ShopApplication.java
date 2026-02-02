@@ -1,16 +1,19 @@
 package ro.pyc22.shop;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.filter.RequestContextFilter;
 
 import java.util.Arrays;
 import java.util.List;
 
 @SpringBootApplication
+@Slf4j
 public class ShopApplication {
 
 	public static void main(String[] args) {
@@ -19,7 +22,9 @@ public class ShopApplication {
 
     @Bean
     public CorsFilter corsFilter() {
-        System.out.println("in cors");
+
+
+        log.info("in cors -->");
         UrlBasedCorsConfigurationSource urlBasedCorsConfigurationSource = new UrlBasedCorsConfigurationSource();
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);

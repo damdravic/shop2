@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import ro.pyc22.shop.model.*;
 import ro.pyc22.shop.model.modelDTO.UserDTO;
@@ -78,7 +77,7 @@ public class CustomerAuthResources {
     }
 
 
-@GetMapping("loadMe")
+@GetMapping("/loadMe")
     public ResponseEntity<HttpResponse> loadMe(Authentication authentication){
 
    String email = authentication.getName();

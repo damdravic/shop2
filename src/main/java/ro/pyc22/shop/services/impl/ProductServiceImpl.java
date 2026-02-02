@@ -155,7 +155,7 @@ public class ProductServiceImpl implements ProductService<Product> {
                 })
                 .toList();
         log.info(pwi.stream().toString());
-        return  pwi;
+        return pwi;
     }
 
 }

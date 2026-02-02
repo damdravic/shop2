@@ -43,9 +43,10 @@ public class JwtFilter extends OncePerRequestFilter {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 
 
+
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        System.out.println("in shouldNotFilter");
-        System.out.println("shouldNotFilter - path :  " + request.getServletPath());
+
+        log.info("Step 1  -> In shouldNotFilter from {} - path : {} " , request.getClass().getName() , request.getServletPath());
         String path = request.getServletPath();
 
         if(request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD)){
@@ -81,7 +82,7 @@ public class JwtFilter extends OncePerRequestFilter {
         try{
 
             String token = getToken(request);
-            log.info("Token {}", token);
+            log.info("Step 4 -> Token {}", token);
             boolean isPublic = isIsPublic(request);
 
             if(token == null || token.isBlank()){
@@ -90,7 +91,8 @@ public class JwtFilter extends OncePerRequestFilter {
                return;
             }
 
-            Map<String ,String> values = getRequestValues(request);
+            Map<String ,String> values = getRequestValues(token,request);
+
 
 
             if(jwtTokenService.isTokenValid(values.get(EMAIL_KEY),token)){
@@ -102,7 +104,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request,response);
         }catch(Exception exception){
-            System.out.println(exception.getMessage());
+            log.error(exception.getMessage());
           exception.getStackTrace();
         }
 
@@ -131,12 +133,11 @@ public class JwtFilter extends OncePerRequestFilter {
       }
 
       if(request.getCookies() != null){
-          log.info("Request {}",request.toString());
 
           for(Cookie c : request.getCookies()){
-              log.info("Cookie -> {} " ,c.getName());
+              log.info("Step 2 -> Cookie Name -> {} " ,c.getName());
               if("accessToken".equals(c.getName())){
-                  System.out.println("accessToken exist");
+                 log.info(" step 3 -> accessToken exist");
                   return c.getValue();
               }
           }
@@ -146,9 +147,9 @@ public class JwtFilter extends OncePerRequestFilter {
     }
 
 
-    private Map<String, String> getRequestValues(HttpServletRequest request) {
-        log.info("in getRequestValues");
-        return Map.of(EMAIL_KEY,jwtTokenService.getSubject(getToken(request),request),TOKEN_KEY,getToken(request));
+    private Map<String, String> getRequestValues(String token, HttpServletRequest request) {
+        log.info("Step 5 -> in getRequestValues");
+        return Map.of(EMAIL_KEY,jwtTokenService.getSubject(token,request),TOKEN_KEY,token);
     }
 
 
