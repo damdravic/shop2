@@ -17,4 +17,9 @@ public class ProductQueries {
     public static final String SELECT_ALL_IMAGES_PATHS_BY_PRODUCT_ID_QUERY = "SELECT * FROM images_paths WHERE product_id = :id";
 
     public static final String SELECT_PRODUCTS_IMAGES_BY_IDS_QUERY = " SELECT id, product_id, image_path FROM images_paths WHERE product_id IN ( :productsIds)";
+
+    public static final String SELECT_PRODUCT_BY_CATEGORY_QUERY =" SELECT p. * FROM products p JOIN product_category pc ON p.id = pc.product_id WHERE pc.category_id = :categoryId ";
+
+
+
 }

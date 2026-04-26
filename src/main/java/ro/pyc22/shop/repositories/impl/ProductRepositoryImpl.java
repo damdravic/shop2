@@ -1,6 +1,7 @@
 package ro.pyc22.shop.repositories.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Repository;
 import ro.pyc22.shop.exceptions.ApiException;
 import ro.pyc22.shop.model.Product;
 import ro.pyc22.shop.model.ProductImage;
+import ro.pyc22.shop.model.modelDTO.ProductWithImagesDto;
 import ro.pyc22.shop.repositories.ProductRepository;
 import ro.pyc22.shop.repositories.rowMappers.ImagePathRowMapper;
 import ro.pyc22.shop.repositories.rowMappers.ProductImageRowMapper;
@@ -23,6 +25,7 @@ import java.util.Map;
 import static ro.pyc22.shop.repositories.queries.ProductQueries.*;
 
 @RequiredArgsConstructor
+@Slf4j
 @Repository
 public class ProductRepositoryImpl implements ProductRepository<Product> {
 
@@ -70,6 +73,16 @@ public class ProductRepositoryImpl implements ProductRepository<Product> {
 
         }
 
+    }
+
+    @Override
+    public List<Product> getProductsByCategory(Long categoryId) {
+        try{
+            return jdbc.query(SELECT_PRODUCT_BY_CATEGORY_QUERY,Map.of("categoryId",categoryId),new ProductRowMapper());
+        }catch(DataAccessException dae){
+            log.error(dae.getMessage());
+            throw new ApiException(dae.getMessage());
+        }
     }
 
     @Override

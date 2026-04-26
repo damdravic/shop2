@@ -8,9 +8,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import ro.pyc22.shop.exceptions.ApiException;
+import ro.pyc22.shop.model.Category;
 import ro.pyc22.shop.model.Product;
 import ro.pyc22.shop.model.ProductImage;
 import ro.pyc22.shop.model.modelDTO.ProductWithImagesDto;
+import ro.pyc22.shop.repositories.CategoryRepository;
 import ro.pyc22.shop.repositories.ProductRepository;
 import ro.pyc22.shop.services.ProductService;
 
@@ -29,6 +31,7 @@ public class ProductServiceImpl implements ProductService<Product> {
     private String uploadFolder;
 
     private final ProductRepository<Product> productRepository;
+    private final CategoryRepository<Category> categoryRepository;
 
 
     @Override
@@ -38,7 +41,7 @@ public class ProductServiceImpl implements ProductService<Product> {
     }
 
     @Override
-    public Product createProduct(String product,String[] imagesPaths) {
+    public Product createProduct(String product,String[] imagesPaths, String categorySlug) {
 
         // create object form string
         ObjectMapper mapper = new ObjectMapper();
@@ -51,14 +54,14 @@ public class ProductServiceImpl implements ProductService<Product> {
             throw new ApiException(e.getMessage());
         }
 
-        //we have product from db...need id to insert paths in db
-        log.info(newProduct.toString());
         Product createdProduct = this.productRepository.createProduct(newProduct);
-        System.out.println(createdProduct.toString());
 
-        List<String> savedPaths = new ArrayList<>();
         for(String path : imagesPaths ){
-            savedPaths.add(this.productRepository.savePath(createdProduct.getId(), path));}
+           this.productRepository.savePath(createdProduct.getId(), path);
+        }
+
+        //insert product in category_product table
+        this.categoryRepository.linkProductToCategoryBySlug(createdProduct, categorySlug);
 
         return newProduct;
 
@@ -71,8 +74,36 @@ public class ProductServiceImpl implements ProductService<Product> {
 
 
     @Override
-    public List<Product> getProductsByCategory() {
-        return List.of();
+    public List<ProductWithImagesDto> getProductsByCategory(String slug) {
+
+        //is not implement any verification of category(if is active or else)
+        Long categoryId = categoryRepository.getCategoryBySlug(slug).getId();
+
+        //get product
+        List<Product> productList=  productRepository.getProductsByCategory(categoryId);
+        return getProductsWithImages( productList);
+
+    }
+
+    private List<ProductWithImagesDto> getProductsWithImages(List<Product> productsList) {
+        List<Long> productsIds = productsList.stream().map(Product::getId).toList();
+
+        List<ProductImage> allImages = productRepository.findImagesForProductIds(productsIds);
+
+        Map<Long,List<ProductImage>> imagesByProductId = allImages.stream().collect(
+                Collectors.groupingBy(ProductImage :: getProduct_Id, LinkedHashMap::new,Collectors.toList()));
+
+        return  productsList.stream()
+                .map(p -> {
+                    List<String> paths = imagesByProductId.getOrDefault(p.getId(), List.of())
+                            .stream()
+                            .map(ProductImage::getPath)
+                            .toList();
+                    return new ProductWithImagesDto(p, paths);
+                })
+                .toList();
+
+
     }
 
     @Override
@@ -136,26 +167,12 @@ public class ProductServiceImpl implements ProductService<Product> {
 
     }
 
+    //used for all products
     @Override
     public List<ProductWithImagesDto> getAllProductsWithImages() {
         List<Product> products = getAllProducts();
-        List<Long> productsIds = products.stream().map(Product::getId).toList();
-        List<ProductImage> allImages = productRepository.findImagesForProductIds(productsIds);
+        return getProductsWithImages(products);
 
-          Map<Long,List<ProductImage>> imagesByProductId = allImages.stream().collect(
-                  Collectors.groupingBy(ProductImage::getProduct_Id, LinkedHashMap::new, Collectors.toList()));
-
-        List< ProductWithImagesDto > pwi = products.stream()
-                .map(p -> {
-                    List<String> paths = imagesByProductId.getOrDefault(p.getId(), List.of())
-                            .stream()
-                            .map(ProductImage::getPath)
-                            .toList();
-                    return new ProductWithImagesDto(p, paths);
-                })
-                .toList();
-        log.info(pwi.stream().toString());
-        return pwi;
     }
 
 }

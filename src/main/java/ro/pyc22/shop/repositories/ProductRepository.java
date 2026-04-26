@@ -2,10 +2,11 @@ package ro.pyc22.shop.repositories;
 
 import ro.pyc22.shop.model.Product;
 import ro.pyc22.shop.model.ProductImage;
+import ro.pyc22.shop.model.modelDTO.ProductWithImagesDto;
 
 import java.util.List;
 
-public interface ProductRepository<T extends Product> {
+ public interface ProductRepository<T extends Product> {
 
     List<T> getAllProducts();
 
@@ -19,4 +20,6 @@ public interface ProductRepository<T extends Product> {
 
 
     List<ProductImage> findImagesForProductIds(List<Long> productsIds);
-}
+
+     List<Product> getProductsByCategory(Long categoryId);
+ }

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ro.pyc22.shop.model.HttpResponse;
 import ro.pyc22.shop.model.User;
+import ro.pyc22.shop.model.enumerations.RoleEnum;
 import ro.pyc22.shop.model.modelDTO.UserDTO;
 import ro.pyc22.shop.model.modelDTO.UserDTOMapper;
 import ro.pyc22.shop.services.UserService;
@@ -22,7 +23,7 @@ public class UserResource {
 
     @PostMapping("/admin/register")
     public ResponseEntity<HttpResponse> creteUser(@RequestBody User user){
-      UserDTO userDTO = formUser(userService.create(user));
+      UserDTO userDTO = formUser(userService.create(user, RoleEnum.ROLE_USER.name()));
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .httpStatus(HttpStatus.CREATED)

@@ -7,9 +7,10 @@ import java.util.Optional;
 
 public interface UserRepository <T extends User> {
 
-    T create (T t);
+    T create (T t,String roleName);
 
-    T getUserByEmail(String email);
+
+    T getUser(String email);
 
     AuthenticatedUser getAuthenticatesUserByUserId(String email);
 }

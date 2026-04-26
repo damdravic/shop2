@@ -44,9 +44,9 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
 
-    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+    protected boolean shouldNotFilter(HttpServletRequest request)  {
 
-        log.info("Step 1  -> In shouldNotFilter from {} - path : {} " , request.getClass().getName() , request.getServletPath());
+        log.info("Step 1  -> verify paths ..and decide if shouldNotFilter {}, {}" , request.getClass().getName() , request.getServletPath());
         String path = request.getServletPath();
 
         if(request.getMethod().equalsIgnoreCase(HTTP_OPTIONS_METHOD)){
@@ -54,11 +54,13 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         //for admin and users
-        if(        path.equals("/admin/login")
+        if(
+                path.equals("/admin/login")
                 || path.equals("/admin/register")
                 || path.equals("/admin/verify/code")
                 || path.equals("/admin/verify/token")
                 || path.equals("/shop/customers/login")
+                        ||path.startsWith("shop/public/")
                 || path.equals("/shop/customers/register")
                 || path.equals("/shop/customers/verify/token")
                 || path.equals("/shop/customers/verify/code")
@@ -81,9 +83,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
         try{
 
+            //try to get token
             String token = getToken(request);
-            log.info("Step 4 -> Token {}", token);
-            boolean isPublic = isIsPublic(request);
+
+            log.info("Token found or null -> {}", token);
+            //boolean isPublic = isIsPublic(request);
 
             if(token == null || token.isBlank()){
                 SecurityContextHolder.clearContext();
@@ -104,6 +108,7 @@ public class JwtFilter extends OncePerRequestFilter {
             }
             filterChain.doFilter(request,response);
         }catch(Exception exception){
+            log.error("JWT filter error", exception);
             log.error(exception.getMessage());
           exception.getStackTrace();
         }
@@ -128,14 +133,17 @@ public class JwtFilter extends OncePerRequestFilter {
     private String getToken(HttpServletRequest request) {
       String token = request.getHeader(AUTHORIZATION);
 
+
+      //if is present in header
       if(token != null && token.startsWith("Bearer ")){
           return token.substring(7);
       }
 
+
+      //if is present in cookies
       if(request.getCookies() != null){
 
           for(Cookie c : request.getCookies()){
-              log.info("Step 2 -> Cookie Name -> {} " ,c.getName());
               if("accessToken".equals(c.getName())){
                  log.info(" step 3 -> accessToken exist");
                   return c.getValue();
@@ -148,7 +156,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
 
     private Map<String, String> getRequestValues(String token, HttpServletRequest request) {
-        log.info("Step 5 -> in getRequestValues");
+        log.info("Step 5 -> get values from token() , email,subject ");
         return Map.of(EMAIL_KEY,jwtTokenService.getSubject(token,request),TOKEN_KEY,token);
     }
 

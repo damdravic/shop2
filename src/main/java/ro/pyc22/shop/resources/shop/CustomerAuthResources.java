@@ -1,7 +1,10 @@
 package ro.pyc22.shop.resources.shop;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -9,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import ro.pyc22.shop.model.*;
+import ro.pyc22.shop.model.enumerations.RoleEnum;
 import ro.pyc22.shop.model.modelDTO.UserDTO;
 import ro.pyc22.shop.model.modelDTO.UserDTOMapper;
 import ro.pyc22.shop.services.RoleService;
@@ -21,7 +25,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/shop/customers")
-@Log4j
+@Slf4j
 public class CustomerAuthResources {
 
     private final UserService<User> userService;
@@ -33,9 +37,22 @@ public class CustomerAuthResources {
     public ResponseEntity<HttpResponse> login (@RequestBody Credentials credentials){
         System.out.println("in customer login");
         System.out.println(credentials.getEmail() + " --- " + credentials.getPassword());
-        UserDTO user = userService.getUserByEmail(credentials.getEmail());
+        UserDTO user = userService.getUser(credentials.getEmail());
+        //TODO if is null nothing happening
         System.out.println("User is using Mfa " + user.getFirstName());
-        return  user.isUsingMfa() ? sendCode(user) : sendResponse(user);
+        return  user.isUsingMfa() ? sendCode(user) :
+                sendResponse(user);
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response){
+        log.info("in logout resource");
+        Cookie cookie = new Cookie("accessToken",null);
+        cookie.setHttpOnly(true);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
     }
 
 
@@ -81,21 +98,32 @@ public class CustomerAuthResources {
     public ResponseEntity<HttpResponse> loadMe(Authentication authentication){
 
    String email = authentication.getName();
-   UserDTO user = userService.getUserByEmail(email);
+   UserDTO user = userService.getUser(email);
+    //TODO if is null nothing happening
    log.info(user.getFirstName());
 
 
     return  ResponseEntity.ok().body(
-            HttpResponse.builder(
-
-            )
+            HttpResponse.builder()
                     .data(Map.of("customer",user ))
-                    .build()
-    );
-
+                    .build());
     }
 
 
+    @PostMapping("/register")
+    public ResponseEntity<HttpResponse> register(@RequestBody User regCustomer){
+        log.info("in resource register");
+        log.info(regCustomer.toString());
+        return ResponseEntity.ok().body(
+                HttpResponse.builder()
+                        .message("Welcome")
+                        .httpStatus(HttpStatus.OK)
+                        .data(Map.of("username",userService.create(regCustomer, RoleEnum.ROLE_CUSTOMER.name())))
+                        .statusCode(HttpStatus.OK.value())
+                        .developerMessage("new customer registered")
+
+                        .build());
+    }
 
 
 

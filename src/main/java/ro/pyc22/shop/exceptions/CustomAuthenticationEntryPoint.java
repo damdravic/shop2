@@ -23,7 +23,13 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
-       log.warn("in AuthenticationEntryPoint");
+
+
+        if(request.getServletPath().equals("/shop/customers/loadMe")){
+            log.info("in AEP because customer not logged. Now are accessible just public paths ");
+        }else {
+            log.warn("AEP: path ->  {}, URI -> {}, methode -> {},",request.getServletPath(),request.getRequestURI(),request.getMethod());
+        }
 
          HttpResponse httpResponse = HttpResponse.builder()
                  .timeStamp(now().toString())

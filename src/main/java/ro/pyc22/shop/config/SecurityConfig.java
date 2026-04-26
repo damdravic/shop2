@@ -48,6 +48,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+
+
                 http .csrf(AbstractHttpConfigurer::disable);
                 http.cors(Customizer.withDefaults());
                 http.authorizeHttpRequests(auth -> auth.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll());
@@ -56,7 +58,8 @@ public class SecurityConfig {
                 http.authorizeHttpRequests(ar -> ar.anyRequest().authenticated());
 
 
-        http.exceptionHandling(exceptionHandling -> exceptionHandling.accessDeniedHandler(customAccessDeniedHandler)
+        http.exceptionHandling(exceptionHandling -> exceptionHandling
+                .accessDeniedHandler(customAccessDeniedHandler)
                 .authenticationEntryPoint(customAuthenticationEntryPoint));
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 

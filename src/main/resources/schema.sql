@@ -33,26 +33,6 @@ FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE CASCADE,
 FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-
-
-CREATE TABLE IF NOT EXISTS products(
-id                BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT PRIMARY KEY,
-name              VARCHAR(100)     NOT NULL,
-product_code       VARCHAR(100)    NOT NULL,
-intern_prod_code   VARCHAR(100)    DEFAULT NULL,
-qr_code_data        VARCHAR(100)  DEFAULT NULL,
-description         VARCHAR(255)  DEFAULT NULL,
-main_image           VARCHAR(255)  DEFAULT NULL,
-price                DECIMAL(7,2)  NOT NULL,
-cost_price            DECIMAL(7,2) DEFAULT NULL,
-markup_percentage     DECIMAL(3,2)  DEFAULT NULL,
-stock            INT NOT NULL,
-is_available BOOLEAN DEFAULT TRUE,
-warranty_months INT DEFAULT NULL,
-vat_percentage INT DEFAULT NULL,
-CONSTRAINT UQ_Products_Product_Code UNIQUE(product_code)
-);
-
 CREATE TABLE  IF NOT EXISTS products(
 id                BIGINT UNSIGNED  NOT NULL AUTO_INCREMENT PRIMARY KEY,
 name              VARCHAR(100)     NOT NULL,
@@ -70,6 +50,15 @@ warranty_months INT DEFAULT NULL,
 vat_percentage INT DEFAULT NULL,
 CONSTRAINT UQ_Products_Product_Code UNIQUE(product_code));
 
+CREATE TABLE IF NOT EXISTS product_category(
+ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+ product_id BIGINT UNSIGNED NOT NULL,
+ category_id BIGINT UNSIGNED NOT NULL,
+ FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE ON UPDATE CASCADE,
+ FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE ON UPDATE CASCADE,
+ CONSTRAINT uk_product_category UNIQUE (product_id,category_id)
+);
+
 CREATE TABLE IF NOT EXISTS images_paths(
 id            BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 product_id  BIGINT UNSIGNED NOT NULL ,
@@ -83,6 +72,23 @@ category_name VARCHAR(100) NOT NULL,
 category_description VARCHAR(200) DEFAULT NULL,
 slug  VARCHAR(100) DEFAULT NULL,
 is_active BOOLEAN DEFAULT TRUE,
-sort_order INTEGER DEFAULT NULL
+sort_order INTEGER DEFAULT NULL);
 
-)
+CREATE TABLE IF NOT EXISTS cart(
+id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+user_id BIGINT UNSIGNED NOT NULL,
+status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (user_id) REFERENCES users(id),
+CONSTRAINT UQ_Cart_User_Id UNIQUE(user_id));
+
+CREATE TABLE IF NOT EXISTS cart_item(
+id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+cart_id BIGINT UNSIGNED NOT NULL,
+product_id BIGINT UNSIGNED NOT NULL ,
+quantity INT NOT NULL ,
+updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY (cart_id) REFERENCES cart(id),
+FOREIGN KEY (product_id) REFERENCES products(id),
+CONSTRAINT UQ_Cart_Item_cart_Product UNIQUE(cart_id,product_id),
+CONSTRAINT chk_cart_item_qty CHECK (quantity > 0 ));

@@ -10,15 +10,17 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.servlet.tags.form.SelectTag;
+import ro.pyc22.shop.exceptions.ApiException;
 import ro.pyc22.shop.model.Category;
+import ro.pyc22.shop.model.Product;
 import ro.pyc22.shop.repositories.CategoryRepository;
 import ro.pyc22.shop.repositories.rowMappers.CategoryRowMapper;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-import static ro.pyc22.shop.repositories.queries.CategoryQueries.INSERT_CATEGORY_QUERY;
-import static ro.pyc22.shop.repositories.queries.CategoryQueries.SELECT_ALL_CATEGORIES_QUERY;
+import static ro.pyc22.shop.repositories.queries.CategoryQueries.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -46,6 +48,20 @@ public class CategoryRepositoryImpl implements CategoryRepository<Category> {
         return category;
     }
 
+    @Override
+    public Category getCategoryBySlug(String categorySlug) {
+
+        try{
+          return   jdbc.queryForObject(SELECT_CATEGORY_BY_SLUG_QUERY,Map.of("slug",categorySlug), new CategoryRowMapper());
+
+        }catch (DataAccessException ex){
+            throw new ApiException("Get error on finding category");
+        }
+
+
+
+    }
+
     private SqlParameterSource getParams(Category category) {
         return new MapSqlParameterSource()
                 .addValue("parentId",category.getParentId())
@@ -67,4 +83,22 @@ public class CategoryRepositoryImpl implements CategoryRepository<Category> {
         }
         return List.of();
     }
+
+    @Override
+    public void linkProductToCategoryBySlug(Product product, String categorySlug) {
+
+        Long categoryId = getCategoryBySlug(categorySlug).getId();
+
+        try{
+            jdbc.update(LINK_PRODUCT_TO_CATEGORY, Map.of("productId",product.getId(),"categoryId",categoryId));
+        }catch( DataAccessException dao){
+            log.error(dao.getMessage());
+        }
+
+
+
+    }
+
+
+
 }

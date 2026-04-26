@@ -78,17 +78,21 @@ public class ProductResources {
     @CrossOrigin(origins = "http://localhost:4200")
     @PostMapping("/addProduct")
     public ResponseEntity<HttpResponse> addProduct(@RequestParam("product") String product,
+                                                   @RequestParam("categorySlug") String categorySlug,
                                                    @RequestParam(value = "imagesPaths", required = false) String[] imagesPaths){
 
-   if(imagesPaths == null){
-       imagesPaths = new String[0];
-   }
+        String[] safeImagesPaths = (imagesPaths == null) ? new String[0] : imagesPaths;
+
 
 
 
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
-                        .data(Map.of("product",productService.createProduct(product,imagesPaths))).build());
+                        .data(Map.of("product",productService.createProduct(
+                                product,
+                                safeImagesPaths,
+                                categorySlug
+                        ))).build());
     }
 
 

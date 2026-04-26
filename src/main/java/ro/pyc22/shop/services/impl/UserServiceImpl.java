@@ -18,15 +18,15 @@ public class UserServiceImpl implements UserService<User> {
     private final UserRepository<User> userRepository;
 
     @Override
-    public User create(User user) {
+    public User create(User user,String roleName) {
 
-     return  userRepository.create(user);
+     return  userRepository.create(user,roleName);
     }
 
     @Override
-    public UserDTO getUserByEmail(String email) {
+    public UserDTO getUser(String email) {
 
-           return  UserDTOMapper.formUser(userRepository.getUserByEmail(email));
+        return  UserDTOMapper.formUser(userRepository.getUser(email));
 
 
     }

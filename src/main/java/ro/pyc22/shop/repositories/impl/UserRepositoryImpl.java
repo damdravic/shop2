@@ -1,6 +1,7 @@
 package ro.pyc22.shop.repositories.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -27,6 +28,7 @@ import static ro.pyc22.shop.repositories.queries.UserQueries.SELECT_USER_BY_EMAI
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class UserRepositoryImpl implements UserRepository<User> {
 
     private final NamedParameterJdbcTemplate jdbc;
@@ -34,45 +36,64 @@ public class UserRepositoryImpl implements UserRepository<User> {
     private final RoleRepository<Role> roleRepository;
 
     @Override
-    public User create(User user)  {
+    public User create(User user,String roleName)  {
+        verifyExist(user);
         KeyHolder kh = new GeneratedKeyHolder();
         SqlParameterSource  params = getParams(user);
        try {
 
            jdbc.update(INSERT_USER_QUERY, params, kh);
            user.setId(Objects.requireNonNull(kh.getKey()).longValue());
-           roleRepository.addRoleToUser(user,ROLE_USER.name());
+           roleRepository.addRoleToUser(user,roleName);
        }catch(DataAccessException dae){
-           //TODO to implement ExceptionHandler
-           System.out.println("error access" + dae.getMessage());
+
+           log.error(dae.getMessage());
+           throw new ApiException("Error during insert user");
         }
-
-
-
-
-
          return user;
     }
 
+    private void verifyExist(User user) {
+        User userByEmail = getUserByEmail(user.getEmail());
+        if(userByEmail != null){
+            throw new ApiException("User already exists");
+        }
+
+    }
+
     @Override
-    public User getUserByEmail(String email) {
+    public User getUser(String email){
+        User user = getUserByEmail(email);
+
+        if (user == null){
+            throw new UsernameNotFoundException("This user not exist in owr database ! Please try again ...");
+        }
+        return user;
+
+
+    }
+
+
+    private User getUserByEmail(String email) {
        try{
              return jdbc.queryForObject(SELECT_USER_BY_EMAIL, Map.of("email",email), new UserRowMapper());
        }catch(EmptyResultDataAccessException ex){
-           throw new UsernameNotFoundException("This user not exist in owr database ! Please try again ...");
+           return null;
+
 
        }catch (DataAccessException dae){
            //TODO to implement ExceptionHandler
-
           throw new ApiException(dae.getMessage());
        }
-
     }
 
     @Override
     public AuthenticatedUser getAuthenticatesUserByUserId(String email) {
 
         User user = getUserByEmail(email);
+        if(user == null){
+            throw new UsernameNotFoundException("This user not exist in owr database ! Please try again ...");
+        }
         List<Role> roles = roleRepository.findAllByUserId(user.getId());
         //fake permissions.All authenticatedUser will have this permissions TODO --  fix it
         List<String> permissions = new ArrayList<>(List.of("PRODUCT:READ"));

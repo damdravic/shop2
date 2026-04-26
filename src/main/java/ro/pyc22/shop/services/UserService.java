@@ -6,8 +6,8 @@ import ro.pyc22.shop.model.modelDTO.UserDTO;
 
 public interface UserService<T extends User> {
 
-    T create(T t);
-    UserDTO getUserByEmail(String email);
+    T create(T t,String  roleName);
+    UserDTO getUser(String email);
 
     AuthenticatedUser getAuthenticatedUserByUserId (String email);
 

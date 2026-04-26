@@ -4,6 +4,7 @@ public enum RoleEnum {
 
 
     ROLE_USER,
+    ROLE_CUSTOMER,
     ROLE_ADMIN,
     ROLE_MANAGER,
     ROLE_SYSADMIN

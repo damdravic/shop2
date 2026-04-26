@@ -38,7 +38,7 @@ public class AuthResources {
     @PostMapping("/login")
     public ResponseEntity<HttpResponse> login(@RequestBody Credentials credentials){
 
-        UserDTO user =  userService.getUserByEmail(credentials.getEmail());
+        UserDTO user =  userService.getUser(credentials.getEmail());
          return  user.isUsingMfa() ? sendPassword(user) :  sendResponse(user);
 
     }
@@ -71,7 +71,7 @@ public class AuthResources {
 
     @GetMapping("/auth/me")
     public ResponseEntity<HttpResponse> me(@AuthenticationPrincipal String email){
-        UserDTO user = userService.getUserByEmail(email);
+        UserDTO user = userService.getUser(email);
         return ResponseEntity.ok().body(
                 HttpResponse.builder()
                         .httpStatus(HttpStatus.OK)

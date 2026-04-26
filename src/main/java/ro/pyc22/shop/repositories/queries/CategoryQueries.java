@@ -6,6 +6,7 @@ public class CategoryQueries {
             "(:parentId, :categoryName, :categoryDescription, :slug, :isActive, :sortOrder) ";
     public static final String SELECT_ALL_CATEGORIES_QUERY ="SELECT * FROM categories ";
 
+    public static final String LINK_PRODUCT_TO_CATEGORY = "INSERT INTO product_category (product_id,category_id) VALUES (:productId, :categoryId)";
 
-
+    public static final String SELECT_CATEGORY_BY_SLUG_QUERY = "SELECT * FROM categories WHERE slug = :slug";
 }

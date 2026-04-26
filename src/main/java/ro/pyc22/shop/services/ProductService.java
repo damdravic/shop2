@@ -10,13 +10,13 @@ public interface ProductService<T extends Product> {
 
 
 
-    Product createProduct(String product,String[] Paths);
+    Product createProduct(String productJSON, String[] Paths, String categorySlug);
 
     Product getProductById(Long id);
 
     List<Product> getAllProducts();
 
-    List<Product> getProductsByCategory();
+    List<ProductWithImagesDto> getProductsByCategory(String slug);
 
     List<Product>  getProductByProperties();
 
